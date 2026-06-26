@@ -154,8 +154,6 @@ class OffloadedWeightsLoader(Mapping):
             with open(os.path.join(save_folder, "index.json")) as f:
                 index = json.load(f)
         self.index = {} if index is None else index
-        self.all_keys = list(self.state_dict.keys())
-        self.all_keys.extend([key for key in self.index if key not in self.all_keys])
         self.device = device
 
     def __getitem__(self, key: str):
@@ -185,10 +183,10 @@ class OffloadedWeightsLoader(Mapping):
         return load_offloaded_weight(weight_file, weight_info)
 
     def __iter__(self):
-        return iter(self.all_keys)
+        return iter(self.state_dict.keys() | self.index.keys())
 
     def __len__(self):
-        return len(self.all_keys)
+        return len(self.state_dict.keys() | self.index.keys())
 
 
 def extract_submodules_state_dict(state_dict: dict[str, torch.Tensor], submodule_names: list[str]):
